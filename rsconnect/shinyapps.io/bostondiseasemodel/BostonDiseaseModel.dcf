@@ -1,0 +1,12 @@
+name: BostonDiseaseModel
+title: BostonDiseaseModel
+username:
+account: bostondiseasemodel
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 329029
+bundleId: 1335349
+url: https://bostondiseasemodel.shinyapps.io/BostonDiseaseModel/
+when: 1524563896.83069
+asMultiple: FALSE
+asStatic: FALSE
