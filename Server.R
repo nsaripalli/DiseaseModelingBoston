@@ -44,8 +44,7 @@ function(input, output) {
     }
     else {
       area <- readOGR("Tracts_Boston BARI.shp")
-      area.points <- fortify(area)
-      
+
       calcFinalInf <- function(POP) {
         param <- param.dcm(inf.prob = (input$R0 / input$`B-c`) #this would be where the risk assessment goes
                            , act.rate = 1, rec.rate = input$y,
@@ -57,28 +56,37 @@ function(input, output) {
         
         mod <- dcm(param, init, control)
         x <- tail(mod$epi$i.num$run1, n=1)
+        x <- ceiling(x)
         return(x)
       }
       
-      wid <- ncol(area)
       area$inf <- area$POP100
-      area$inf <- lapply(area$inf, calcFinalInf)
+      area$inf <- sapply(area$inf, calcFinalInf)
     
+      library(plyr)      # for join(...)
+      library(rgdal)     # for readOGR(...)
+      library(ggplot2)   # for fortify(...)
+      
+      area@data$id = rownames(area@data)
+      
+      area.points = fortify(area)
+      area.points = join(area.points, area@data, by="id")      
       
       colors <- brewer.pal(9, "BuGn")
       
       mapImage <- get_map(location=c(left = -71.193799, bottom = 42.15, right = -70.985746, top = 42.5))
       
-      area.points <- fortify(area)
+      colors <- brewer.pal(9, "BuGn")
       
-      p <- ggmap(mapImage) +
-        geom_polygon(aes(x = long,
-                         y = lat,
-                         group = group),
-                     data = area.points,
-                     color = colors[9],
-                     fill = colors[6],
-                     alpha = 0.5) +
+      mapImage <- get_map(location=c(left = -71.193799, bottom = 42.15, right = -70.985746, top = 42.5))
+      
+      
+      
+      p <- ggmap(mapImage) + geom_polygon(data = area.points, aes(x = long,
+                                                                  y = lat,
+                                                                  group = group,
+                                                                  fill = inf),
+                                          color = "black") +
         labs(x = "Longitude",
              y = "Latitude")
       

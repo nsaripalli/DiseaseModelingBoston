@@ -5,8 +5,8 @@ account: bostondiseasemodel
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 329029
-bundleId: 1336538
+bundleId: 1336782
 url: https://bostondiseasemodel.shinyapps.io/BostonDiseaseModel/
-when: 1524594502.38319
+when: 1524599788.85823
 asMultiple: FALSE
 asStatic: FALSE
