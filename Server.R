@@ -19,6 +19,7 @@ function(input, output) {
     library(maptools)
     library(RColorBrewer)
     library(ggmap)
+    library(deSolve)
     library(EpiModel)
     
     
@@ -27,9 +28,10 @@ function(input, output) {
                          , act.rate = 1, rec.rate = input$y,
                          b.rate = 1/3650 #Boston is closish to this number
                          , ds.rate = 1/100, di.rate = 1/80, dr.rate = 1/100)
-      init <- init.dcm(s.num = ((input$S) / 673184) #cur pop of Boston
+      init <- init.dcm(s.num = ((input$S) * 673184) #cur pop of Boston
                        , i.num = input$I, r.num = 0)
       control <- control.dcm(type = "SIR", nsteps = input$numDays, dt = 0.5)
+      
       mod <- dcm(param, init, control)
       
       q1 <- par(mar = c(3.2, 3, 2, 1), mgp = c(2, 1, 0), mfrow = c(1, 2))
@@ -42,7 +44,26 @@ function(input, output) {
     }
     else {
       area <- readOGR("Tracts_Boston BARI.shp")
+      area.points <- fortify(area)
       
+      calcFinalInf <- function(POP) {
+        param <- param.dcm(inf.prob = (input$R0 / input$`B-c`) #this would be where the risk assessment goes
+                           , act.rate = 1, rec.rate = input$y,
+                           b.rate = 1/3650 #Boston is closish to this number
+                           , ds.rate = 1/100, di.rate = 1/80, dr.rate = 1/100)
+        init <- init.dcm(s.num = ((input$S) * POP * 100)
+                         , i.num = input$I, r.num = 0)
+        control <- control.dcm(type = "SIR", nsteps = input$numDays, dt = 0.5)
+        
+        mod <- dcm(param, init, control)
+        x <- tail(mod$epi$i.num$run1, n=1)
+        return(x)
+      }
+      
+      wid <- ncol(area)
+      area$inf <- area$POP100
+      area$inf <- lapply(area$inf, calcFinalInf)
+    
       
       colors <- brewer.pal(9, "BuGn")
       
@@ -67,4 +88,3 @@ function(input, output) {
   }, height=700)
   
 }
-
